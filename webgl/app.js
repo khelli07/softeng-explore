@@ -41,112 +41,117 @@ void main() {
 `;
 
 function createShader(gl, type, source) {
-  const shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader;
-  }
+    }
 
-  console.log(gl.getShaderInfoLog(shader));
-  gl.deleteShader(shader);
+    console.log(gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
 }
 
 function createProgram(gl, vertexShader, fragmentShader) {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
 
-  if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     return program;
-  }
+    }
 
-  console.log(gl.getProgramInfoLog(program));
-  gl.deleteProgram(program);
+    console.log(gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+}
+
+function getQuadrant(x, y) {
+    if (x >= 0 && y >= 0) return 1;
+    if (x <= 0 && y > 0) return 2;
+    if (x < 0 && y <= 0) return 3;
+    if (x > 0 && y < 0) return 4;
+}
+
+function angleComparison(a, b) {
+    const aQuadrant = getQuadrant(a[0], a[1]);
+    const bQuadrant = getQuadrant(b[0], b[1]);
+    if (aQuadrant === bQuadrant) {
+        return Math.atan(a[1] / a[0]) - Math.atan(b[1] / b[0]);
+    } else {
+        return aQuadrant - bQuadrant;
+    }
 }
 
 const main = function () {
-  // Initialize GL
-  const canvas = document.querySelector("#glcanvas");
-  const gl = canvas.getContext("webgl");
+    // Initialize GL
+    const canvas = document.querySelector("#glcanvas");
+    const gl = canvas.getContext("webgl");
 
-  if (!gl) {
+    if (!gl) {
     alert(
-      "Unable to initialize WebGL. Your browser or machine may not support it."
+        "Unable to initialize WebGL. Your browser or machine may not support it."
     );
     return;
-  }
+    }
 
-  gl.clearColor(0.75, 0.85, 0.8, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clearColor(0.9, 0.9, 0.9, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Initialize shaders and program
+    // Initialize shaders and program
 
-  const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-  const fragmentShader = createShader(
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(
     gl,
     gl.FRAGMENT_SHADER,
     fragmentShaderSource
-  );
-  const program = createProgram(gl, vertexShader, fragmentShader);
+    );
+    const program = createProgram(gl, vertexShader, fragmentShader);
 
-  // Create buffer
-  const positionBuffer = gl.createBuffer(); // buffer on GPU
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    // Create buffer
+    const positionBuffer = gl.createBuffer(); // buffer on GPU
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-  // Define vertex shader attribute "a_position"
-  const positionAttributeLocation = gl.getAttribLocation(program, "a_position"); // a_position is the name of vertexShaderSource's attribute
+    // Define vertex shader attribute "a_position"
+    const positionAttributeLocation = gl.getAttribLocation(program, "a_position"); // a_position is the name of vertexShaderSource's attribute
 
-  gl.vertexAttribPointer(
+    gl.vertexAttribPointer(
     positionAttributeLocation,
     2, // how many element per vertex
     gl.FLOAT, // type
     gl.FALSE, // don't normalize data
     2 * Float32Array.BYTES_PER_ELEMENT, // stride
     0 // offset
-  );
-  gl.enableVertexAttribArray(positionAttributeLocation);
+    );
+    gl.enableVertexAttribArray(positionAttributeLocation);
 
-  // Vertices
-  let vertices = [
-    // X, Y
-    -0.25, 0.25, 
-    -0.25, -0.25,
-  ];
+    // Vertices
+    let points = [
+        [0.4, 0],
+        [0.25, 0.25],
+        [-0.25, -0.25],
+        [-0.4, 0],
+        [0.25, -0.25],
+        [0, 0.5],        
+        [-0.25, 0.25],
+        [0.1, 0.1]
+    ];
 
-  // Main render loop
-  gl.useProgram(program);
 
-  // Supply data to buffer
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  gl.drawArrays(gl.LINE_STRIP, 0, 2);
+    points = points.sort((a, b) => angleComparison(a, b));
+    console.log(points);
 
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-0.5, 0.25, -0.5, -0.25]),
-    gl.STATIC_DRAW
-  );
-  gl.drawArrays(gl.LINE_STRIP, 0, 2);
+    let vertices = []
+    for (let i = 0; i < points.length; i++) {
+        vertices.push(points[i][0]);
+        vertices.push(points[i][1]);
+    }
+    // console.log(vertices);
 
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-0.5, 0, -0.25, 0]),
-    gl.STATIC_DRAW
-  );
-  gl.drawArrays(gl.LINE_STRIP, 0, 2);
+    // Main render loop
+    gl.useProgram(program);
 
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-0.1, -0.25, -0.1, 0.15]),
-    gl.STATIC_DRAW
-  );
-  gl.drawArrays(gl.LINE_STRIP, 0, 2);
-
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-0.1, 0.2, -0.1, 0.25]),
-    gl.STATIC_DRAW
-  );
-  gl.drawArrays(gl.LINE_STRIP, 0, 2);
+    // Supply data to buffer
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.drawArrays(gl.LINE_LOOP, 0, vertices.length / 2);
 };

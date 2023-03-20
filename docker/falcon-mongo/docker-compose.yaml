@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  web:
+    image: falcon_web:v1.0.2
+    container_name: falcon_web
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=dev
+
+  mongodb:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=user135
+      - MONGO_INITDB_ROOT_PASSWORD=pass135
+    ports:
+      - 27017:27017
+    volumes:
+      - ~/apps/mongo:/data/db

@@ -3,11 +3,12 @@ attribute vec3 vertColor;
 varying vec3 fragColor;
 
 attribute vec4 a_position;
+uniform mat4 cameraMatrix;
 uniform mat4 u_matrix;
  
 void main() {
     fragColor = vertColor;
-    gl_Position = u_matrix * a_position;
+    gl_Position = cameraMatrix * u_matrix * a_position;
 }
 `;
 
@@ -109,15 +110,53 @@ const main = function () {
     gl.enableVertexAttribArray(colorLocation);
 
     // Define uniform matrix
+    const matrixLocation = gl.getUniformLocation(program, "u_matrix");    
     const translation = [0, 0, 0];
-    let rotation = [degToRad(90), degToRad(0), degToRad(0)];
+    let rotation = [degToRad(0), degToRad(0), degToRad(0)];
     const scale = [1, 1, 1];
 
     let matrix = getTransformationMatrix(translation, rotation, scale);
 
     // Set the matrix.
-    const matrixLocation = gl.getUniformLocation(program, "u_matrix");
     gl.uniformMatrix4fv(matrixLocation, false, matrix);
+
+    // // ==============================================================
+    const cameraLocation = gl.getUniformLocation(program, "cameraMatrix");  
+    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const zNear = -1;
+    const zFar = 1;
+    const projectionMatrix = m4.perspective(degToRad(100), aspect, zNear, zFar);
+
+    // Define view matrix
+    let cameraAngleRadians = degToRad(0);
+    let radius = 1;
+    // const viewMatrixLoc = gl.getUniformLocation(program, "viewMatrix");
+
+    let cameraMatrix = m4.yRotation(cameraAngleRadians);
+    cameraMatrix = m4.translate(cameraMatrix, 0, 0, radius * 1.5);
+
+    // Get the camera's position from the matrix we computed
+    const cameraPosition = [
+      cameraMatrix[12],
+      cameraMatrix[13],
+      cameraMatrix[14],
+    ];
+
+    const up = [0, 1, 0];
+
+    // Compute the camera's matrix using look at.
+    cameraMatrix = m4.lookAt(cameraPosition, [0, 0, 0], up);
+
+    // Make a view matrix from the camera matrix
+    let viewMatrix = m4.inverse(cameraMatrix);
+
+    // starting with the view projection matrix
+    let viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+    matrix = m4.translate(viewProjectionMatrix, 0, 0, 0);
+
+    // Set the matrix.
+    gl.uniformMatrix4fv(cameraLocation, false, matrix);
+    // // ==============================================================
 
     // Draw
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);

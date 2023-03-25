@@ -2,13 +2,14 @@ const vertexShaderSource = `
 attribute vec3 vertColor;
 varying vec3 fragColor;
 
-attribute vec4 a_position;
-uniform mat4 cameraMatrix;
-uniform mat4 u_matrix;
+attribute vec4 vertPosition;
+uniform mat4 worldMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projMatrix;
  
 void main() {
     fragColor = vertColor;
-    gl_Position = cameraMatrix * u_matrix * a_position;
+    gl_Position = worldMatrix * vertPosition;
 }
 `;
 
@@ -86,7 +87,7 @@ const main = function () {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     
     // Define vertex shader attribute
-    const positionLocation = gl.getAttribLocation(program, "a_position");
+    const positionLocation = gl.getAttribLocation(program, "vertPosition");
     const colorLocation = gl.getAttribLocation(program, "vertColor");
     gl.vertexAttribPointer(
         positionLocation, // Attribute location
@@ -109,8 +110,9 @@ const main = function () {
     gl.enableVertexAttribArray(positionLocation);
     gl.enableVertexAttribArray(colorLocation);
 
-    // Define uniform matrix
-    const matrixLocation = gl.getUniformLocation(program, "u_matrix");    
+    // ==============================================================
+    // Define model matrix
+    const worldLocation = gl.getUniformLocation(program, "worldMatrix");    
     const translation = [0, 0, 0];
     let rotation = [degToRad(0), degToRad(0), degToRad(0)];
     const scale = [1, 1, 1];
@@ -118,45 +120,61 @@ const main = function () {
     let matrix = getTransformationMatrix(translation, rotation, scale);
 
     // Set the matrix.
-    gl.uniformMatrix4fv(matrixLocation, false, matrix);
+    gl.uniformMatrix4fv(worldLocation, false, matrix);
 
-    // // ==============================================================
-    const cameraLocation = gl.getUniformLocation(program, "cameraMatrix");  
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = -1;
-    const zFar = 1;
-    const projectionMatrix = m4.perspective(degToRad(100), aspect, zNear, zFar);
-
+    // ==============================================================
     // Define view matrix
-    let cameraAngleRadians = degToRad(0);
+    const cameraLocation = gl.getUniformLocation(program, "viewMatrix");  
+    
+    let viewMatrix = m4.xRotation(degToRad(0));
+    viewMatrix = m4.yRotate(viewMatrix, degToRad(0));
+    viewMatrix = m4.zRotate(viewMatrix, degToRad(0));
+    
     let radius = 1;
-    // const viewMatrixLoc = gl.getUniformLocation(program, "viewMatrix");
-
-    let cameraMatrix = m4.yRotation(cameraAngleRadians);
-    cameraMatrix = m4.translate(cameraMatrix, 0, 0, radius * 1.5);
-
+    viewMatrix = m4.translate(viewMatrix, 0, 0, radius);
+    
     // Get the camera's position from the matrix we computed
     const cameraPosition = [
-      cameraMatrix[12],
-      cameraMatrix[13],
-      cameraMatrix[14],
+        viewMatrix[12],
+        viewMatrix[13],
+        viewMatrix[14],
     ];
-
+    console.log(cameraPosition);
     const up = [0, 1, 0];
-
+    
     // Compute the camera's matrix using look at.
-    cameraMatrix = m4.lookAt(cameraPosition, [0, 0, 0], up);
+    viewMatrix = m4.lookAt(cameraPosition, [0, 0, 0], up);
 
-    // Make a view matrix from the camera matrix
-    let viewMatrix = m4.inverse(cameraMatrix);
-
-    // starting with the view projection matrix
-    let viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
-    matrix = m4.translate(viewProjectionMatrix, 0, 0, 0);
-
+    // Move the camera as it is at the origin 0, 0, 0
+    viewMatrix = m4.inverse(viewMatrix);
+    
     // Set the matrix.
-    gl.uniformMatrix4fv(cameraLocation, false, matrix);
+    gl.uniformMatrix4fv(cameraLocation, false, viewMatrix);
     // // ==============================================================
+    // Define projection matrix
+    const projLocation = gl.getUniformLocation(program, "projMatrix");  
+
+    // Perspective proj matrix.
+    let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    let zNear = 0.1;
+    let zFar = 1000;
+    let projMatrix = m4.perspective(degToRad(90), aspect, zNear, zFar);
+    
+    // Ortho proj matrix.
+    // let left = -0.5;
+    // let bottom = -1;
+    // let near = -1;
+    
+    // let right = 0.5;
+    // let top = 1;
+    // let far = 1;
+    // let projMatrix = m4.orthographic(left, right, bottom, top, near, far);
+    
+    // No proj matrix.
+    // let projMatrix = m4.identity();
+    
+    // Set the matrix.
+    gl.uniformMatrix4fv(projLocation, false, projMatrix);
 
     // Draw
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
@@ -169,8 +187,9 @@ const main = function () {
 
 		rotation = [0, angle, angle];
         matrix = getTransformationMatrix(translation, rotation, scale);
-        gl.uniformMatrix4fv(matrixLocation, false, matrix);
+        gl.uniformMatrix4fv(worldLocation, false, matrix);
 
+        
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
 	    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);

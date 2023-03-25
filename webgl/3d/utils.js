@@ -23,33 +23,67 @@ const vec3 = {
 }
 
 const m4 = {
+    identity: function () {
+        return [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]
+    },
+
     translation: function (tx, ty, tz) {
-        return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, tx, ty, tz, 1];
+        return [
+            1, 0, 0, 0, 
+            0, 1, 0, 0, 
+            0, 0, 1, 0, 
+            tx, ty, tz, 1
+        ];
     },
 
     xRotation: function (angleInRadians) {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
-        return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1];
+        return [
+            1, 0, 0, 0, 
+            0, c, s, 0, 
+            0, -s, c, 0, 
+            0, 0, 0, 1
+        ];
     },
 
     yRotation: function (angleInRadians) {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
-        return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1];
+        return [
+            c, 0, -s, 0,
+            0, 1, 0, 0, 
+            s, 0, c, 0, 
+            0, 0, 0, 1
+        ];
     },
 
     zRotation: function (angleInRadians) {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
-        return [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        return [
+            c, s, 0, 0, 
+            -s, c, 0, 0, 
+            0, 0, 1, 0, 
+            0, 0, 0, 1
+        ];
     },
 
     scaling: function (sx, sy, sz) {
-        return [sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1];
+        return [
+            sx, 0, 0, 0, 
+            0, sy, 0, 0, 
+            0, 0, sz, 0, 
+            0, 0, 0, 1
+        ];
     },
 
     translate: function (m, tx, ty, tz) {
@@ -103,6 +137,16 @@ const m4 = {
         return result;
     },
 
+    projection: function(width, height, depth) {
+        // Note: This matrix flips the Y axis so 0 is at the top.
+        return [
+           2 / width, 0, 0, 0,
+           0, -2 / height, 0, 0,
+           0, 0, 2 / depth, 0,
+          -1, 1, 0, 1,
+        ];
+    },
+
     perspective: function(fieldOfViewInRadians, aspect, near, far) {
         var f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
         var rangeInv = 1.0 / (near - far);
@@ -113,19 +157,21 @@ const m4 = {
           0, 0, (near + far) * rangeInv, -1,
           0, 0, near * far * rangeInv * 2, 0
         ];
-      },
-    
-      projection: function(width, height, depth) {
-        // Note: This matrix flips the Y axis so 0 is at the top.
-        return [
-           2 / width, 0, 0, 0,
-           0, -2 / height, 0, 0,
-           0, 0, 2 / depth, 0,
-          -1, 1, 0, 1,
-        ];
-      },
+    },
 
- 
+    orthographic: function(left, right, bottom, top, near, far) {
+        return [
+          2 / (right - left), 0, 0, 0,
+          0, 2 / (top - bottom), 0, 0,
+          0, 0, 2 / (near - far), 0,
+     
+          (left + right) / (left - right),
+          (bottom + top) / (bottom - top),
+          (near + far) / (near - far),
+          1,
+        ];
+    },
+
     lookAt: function(cameraPosition, target, up) {
         const zAxis = vec3.normalize(
             vec3.subtract(cameraPosition, target));

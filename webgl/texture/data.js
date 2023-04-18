@@ -40,21 +40,3 @@ const buffer = {
         2, 1, 5,
     ]
 }
-
-const transformation = {
-    translation : [0, 0, 0],
-    rotation : [degToRad(0), degToRad(0), degToRad(0)],
-    scale : [1, 1, 1]
-}
-
-const transformation2 = {
-    translation : [0.5, 0.5, 0],
-    rotation : [degToRad(0), degToRad(0), degToRad(0)],
-    scale : [1, 1, 1]
-}
-
-const transformation3 = {
-    translation : [-0.5, -0.5, 0],
-    rotation : [degToRad(0), degToRad(0), degToRad(0)],
-    scale : [1, 1, 1]
-}

@@ -92,32 +92,18 @@ const main = function () {
     }
 
     // Create object
-    // transformation.rotation = [degToRad(90), degToRad(0), 0];
-    const cuboid1 = new Cuboid(0.1, 0.1, 0.2, transformation2);
-    const cuboid2 = new Cuboid(0.1, 0.1, 0.2, transformation3);
-    const cube = new Cube(0.25, transformation);
-    
-    cube.render(gl, programInfo);
-    cuboid1.render(gl, programInfo);
-    cuboid2.render(gl, programInfo);
+    let trans = new Transformation();
 
+    let angle = 0;
     const loop = function () {
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
 	    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-		angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+        angle = (angle + 0.25) % 360;
 
-		transformation.rotation = [0, angle, angle];
-		transformation2.rotation = [angle, 0, angle];
-		transformation3.rotation = [angle, 0, angle];
-        
-        cube.rerender(gl, programInfo, transformation);
-        cuboid1.rerender(gl, programInfo, transformation2);
-        cuboid2.rerender(gl, programInfo, transformation3);
-		
         requestAnimationFrame(loop);
 	};
-	requestAnimationFrame(loop);
+	// requestAnimationFrame(loop);
 };
 
 main();

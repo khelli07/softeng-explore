@@ -62,6 +62,10 @@ class Cuboid extends Geometry {
         ];
     }
 
+    generateIndices() {
+        this.buffer.indices = [...Array(36).keys()];
+    }
+
     generateDefaultColors() {
         this.buffer.colors = [
             0.7, 0, 0,
@@ -106,10 +110,6 @@ class Cuboid extends Geometry {
             0, 0.7, 0.7,
             0, 0.7, 0.7,
         ];
-    }
-
-    generateIndices() {
-        this.buffer.indices = [...Array(36).keys()];
     }
 
     generateNormals() {

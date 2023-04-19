@@ -27,7 +27,7 @@ varying vec3 fragColor;
 varying vec3 worldPosition;
 varying vec3 worldNormal;
 
-uniform samplerCube texture;
+uniform samplerCube texCube;
 uniform vec3 cameraPosition;
 
 void main() {
@@ -35,7 +35,7 @@ void main() {
     vec3 eyeToSurface = normalize(worldPosition - cameraPosition);
     vec3 reflection = reflect(eyeToSurface, worldNormal);
 
-    gl_FragColor = textureCube(texture, reflection);
+    gl_FragColor = textureCube(texCube, reflection);
     // gl_FragColor = vec4(fragColor, 1.0);
 }
 `;
@@ -105,7 +105,7 @@ const main = function () {
         positionLocation: gl.getAttribLocation(program, "vertPosition"),
         colorLocation: gl.getAttribLocation(program, "vertColor"),
         normalLocation: gl.getAttribLocation(program, "vertNormal"),
-        textureLocation: gl.getUniformLocation(program, "texture"),
+        textureLocation: gl.getUniformLocation(program, "texCube"),
 
         worldLocation: gl.getUniformLocation(program, "worldMatrix"),
         viewLocation: gl.getUniformLocation(program, "viewMatrix"),

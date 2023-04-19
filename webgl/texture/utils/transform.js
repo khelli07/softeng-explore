@@ -193,6 +193,16 @@ const m4 = {
         ];
     },
 
+    transpose: function(m) {
+        let mat = m4.identity();
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                mat[j * 4 + i] = m[i * 4 + j];
+            }
+        }
+        return mat;
+    },
+
     inverse: function(m) {
         var m00 = m[0 * 4 + 0];
         var m01 = m[0 * 4 + 1];
@@ -302,3 +312,18 @@ function degToRad(d) {
 
 //     return matrix
 // }
+
+function getTransformedPoint(transformationMatrix, point) {
+    let result = [0, 0, 0, 0];
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            result[i] += transformationMatrix[i * 4 + j] * point[j];
+        }
+    }
+    for (let i = 0; i < 4; i++) {
+        result[i] = Math.round((result[i] / result[3]) * 1000) / 1000;
+    }
+
+    console.log(result);
+    return result;
+}

@@ -122,13 +122,13 @@ const main = function () {
         );
 
     let larm = new Node(new Cuboid(0.4, 0.03, 0.03, trans)
-        .setTranslation([0.2, -0.05, 0])
+        .setTranslation([0.225, -0.05, 0])
         .setRotation([0, 0, 10])
         .setRotationCenter([-0.25, -0.4, 0])
         );
 
     let rarm = new Node(new Cuboid(0.4, 0.03, 0.03, trans)
-        .setTranslation([-0.2, -0.05, 0.0])
+        .setTranslation([-0.225, -0.05, 0.0])
         .setRotation([0, 0, -10])
         .setRotationCenter([0.25, -0.4, 0])
         );
@@ -137,6 +137,7 @@ const main = function () {
     torso.appendChild(larm, rarm, lfoot, rfoot);
 
     head.render(gl, programInfo);
+    // head.export("enderman");
     // rarm.render(gl, programInfo);
 
     let angleArm = 0;
@@ -180,7 +181,7 @@ const main = function () {
         
         requestAnimationFrame(loop);
 	};
-	requestAnimationFrame(loop);
+	// requestAnimationFrame(loop);
 };
 
 main();

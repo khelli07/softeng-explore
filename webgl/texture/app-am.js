@@ -67,9 +67,9 @@ const main = function () {
 	gl.enable(gl.DEPTH_TEST);
 
     // Specify cull face so the program does not draw back
-	gl.enable(gl.CULL_FACE);
-	gl.frontFace(gl.CCW);
-	gl.cullFace(gl.BACK);
+	// gl.enable(gl.CULL_FACE);
+	// gl.frontFace(gl.CCW);
+	// gl.cullFace(gl.BACK);
 
     // Initialize shaders and program
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
@@ -94,16 +94,43 @@ const main = function () {
     // Create object
     let trans = new Transformation();
 
+    let head = new Node(new Cuboid(0.1, 0.15, 0.125, trans)
+        .setTranslation([0, 0.5, 0]));
+
+    let torso = new Node(new Cuboid(0.25, 0.2, 0.075, trans)
+        .setTranslation([0.0, 0.15, 0.0])
+        );
+
+    let larm = new Node(new Cuboid(0.5, 0.03, 0.03, trans)
+        .setTranslation([0.15, -0.15, 0])
+        // .setRotation([0, 0, 0])
+        .setRotationCenter([0, 0.5, 0])
+        );
+
+    let rarm = new Node(new Cuboid(0.5, 0.03, 0.03, trans)
+        .setTranslation([-0.15, -0.15, 0.0])
+        .setRotation([0, 0, 0])
+        .setRotationCenter([0, 0.5, 0])
+        );
+
+    head.appendChild(torso);
+    torso.appendChild(larm, rarm);
+
+    head.render(gl, programInfo, m4.identity());
+    gl.clearColor(0.75, 0.85, 0.8, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
     let angle = 0;
+    let rotation;
     const loop = function () {
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
 	    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        angle = (angle + 0.25) % 360;
+        head.rotate(gl, programInfo, [0, 0.015, 0]);
 
         requestAnimationFrame(loop);
 	};
-	// requestAnimationFrame(loop);
+	requestAnimationFrame(loop);
 };
 
 main();

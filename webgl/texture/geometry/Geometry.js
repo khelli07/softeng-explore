@@ -8,16 +8,13 @@ class Geometry {
         
         this.rotationCenter = m4.identity();
         this.invRotationCenter = m4.identity();
+        this.transformationMatrix = m4.identity();
         this.setTransformationMatrix();
         
         this.animationIsSet = false;
     }
 
-    render(gl, programInfo, ancestorMatrix) {
-        if (!ancestorMatrix) {
-            ancestorMatrix = m4.identity();
-        }
-
+    render(gl, programInfo) {
         // 0. Save OpenGL state
         this.#gl = gl;
         this.#lastProgramInfo = programInfo;
@@ -30,7 +27,7 @@ class Geometry {
 
         // 3. Set uniforms
         // World matrix
-        gl.uniformMatrix4fv(programInfo.worldLocation, gl.FALSE, this.generateWorldMatrix(ancestorMatrix));
+        gl.uniformMatrix4fv(programInfo.worldLocation, gl.FALSE, this.transformationMatrix);
 
         // Model matrix
         let viewMatrix = m4.xRotation(degToRad(0));
@@ -66,27 +63,16 @@ class Geometry {
         this.buffer.draw(gl);
     }
 
-    rerender(gl, programInfo, ancestorMatrix) {
+    rerender(gl, programInfo) {
         if (!this.#lastProgramInfo) {
             throw new Error("You need to render first!");
         }
-
-        if (!ancestorMatrix) {
-            ancestorMatrix = m4.identity();
-        }
         
         this.buffer.bind(gl, programInfo);
-        gl.uniformMatrix4fv(
-            programInfo.worldLocation, 
-            gl.FALSE, 
-            this.generateWorldMatrix(ancestorMatrix)
+        gl.uniformMatrix4fv(programInfo.worldLocation, gl.FALSE, 
+            this.transformationMatrix
         );
         this.buffer.draw(gl);
-    }
-
-    generateWorldMatrix(ancestorMatrix) {
-        this.worldMatrix = m4.multiply(this.transformationMatrix, ancestorMatrix);
-        return this.worldMatrix;
     }
 
     setColor(colors) {
@@ -170,17 +156,18 @@ class Geometry {
         this.rerender(this.#gl, this.#lastProgramInfo);
     }
 
-    rotate(rotation) {
+    rotate(gl, programInfo, rotation) {
         let matrix = m4.identity();
         matrix = m4.xRotate(matrix, rotation[0]);
         matrix = m4.yRotate(matrix, rotation[1]);
         matrix = m4.zRotate(matrix, rotation[2]);
+
         this.transformationMatrix = m4.multiply(matrix, this.transformationMatrix);
         
         if (this.#gl && this.#lastProgramInfo) {
-            this.render(this.#gl, this.#lastProgramInfo);
-        } else {
             this.rerender(this.#gl, this.#lastProgramInfo);
+        } else {
+            this.render(gl, programInfo);
         }
     }
 }

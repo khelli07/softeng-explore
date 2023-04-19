@@ -12,9 +12,13 @@ class Buffer {
 
     bind(gl, programInfo) {
         this.bindPositions(gl, programInfo);
-        this.bindColors(gl, programInfo);
-        this.bindNormals(gl, programInfo);
         this.bindIndices(gl, programInfo);
+        if (programInfo.colorLocation != "undefined") {
+            this.bindColors(gl, programInfo);
+        }
+        if (programInfo.normalLocation) {
+            this.bindNormals(gl, programInfo);
+        }
         // this.bindTextures(gl, programInfo);
     }
 

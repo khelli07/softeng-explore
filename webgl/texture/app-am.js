@@ -181,7 +181,7 @@ const main = function () {
         
         requestAnimationFrame(loop);
 	};
-	// requestAnimationFrame(loop);
+	requestAnimationFrame(loop);
 };
 
 main();

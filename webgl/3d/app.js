@@ -9,7 +9,8 @@ uniform mat4 projMatrix;
  
 void main() {
     fragColor = vertColor;
-    gl_Position = worldMatrix * vertPosition;
+    gl_Position = projMatrix * viewMatrix * worldMatrix * vertPosition;
+    // gl_Position = worldMatrix * vertPosition;
 }
 `;
 
@@ -128,9 +129,9 @@ const main = function () {
     
     let viewMatrix = m4.xRotation(degToRad(0));
     viewMatrix = m4.yRotate(viewMatrix, degToRad(0));
-    viewMatrix = m4.zRotate(viewMatrix, degToRad(0));
+    viewMatrix = m4.zRotate(viewMatrix, degToRad(100));
     
-    let radius = 1;
+    let radius = 1.5;
     viewMatrix = m4.translate(viewMatrix, 0, 0, radius);
     
     // Get the camera's position from the matrix we computed
@@ -185,7 +186,7 @@ const main = function () {
     const loop = function () {
 		angle = performance.now() / 1000 / 6 * 2 * Math.PI;
 
-		rotation = [0, angle, angle];
+		rotation = [angle, angle, 0];
         matrix = getTransformationMatrix(translation, rotation, scale);
         gl.uniformMatrix4fv(worldLocation, false, matrix);
 
